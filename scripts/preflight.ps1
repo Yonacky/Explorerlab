@@ -8,6 +8,9 @@ $apiJar = Join-Path $gameRoot ("mods\fabric-api-" + $config.fabricApiVersion + '
 $isolatedApiJar = Join-Path $instanceRoot ("mods\fabric-api-" + $config.fabricApiVersion + '.jar')
 $javaExe = Join-Path $config.javaHome 'bin\java.exe'
 $javacExe = Join-Path $config.javaHome 'bin\javac.exe'
+$wrapperScript = Join-Path $root 'gradlew.bat'
+$wrapperJar = Join-Path $root 'gradle\wrapper\gradle-wrapper.jar'
+$wrapperProperties = Join-Path $root 'gradle\wrapper\gradle-wrapper.properties'
 
 function Report($name, $ok, $detail) {
     $state = if ($ok) { 'PASS' } else { 'CHECK' }
@@ -15,6 +18,13 @@ function Report($name, $ok, $detail) {
 }
 
 Report 'JDK 17' ((Test-Path -LiteralPath $javaExe) -and (Test-Path -LiteralPath $javacExe)) $config.javaHome
+if (Test-Path -LiteralPath $wrapperProperties) {
+    $wrapperText = Get-Content -Raw -LiteralPath $wrapperProperties
+    $wrapperPinned = ($wrapperText -match 'gradle-9\.5\.1-bin\.zip') -and ($wrapperText -match 'distributionSha256Sum=[a-f0-9]{64}')
+    Report 'Gradle Wrapper' ((Test-Path -LiteralPath $wrapperScript) -and (Test-Path -LiteralPath $wrapperJar) -and $wrapperPinned) $wrapperProperties
+} else {
+    Report 'Gradle Wrapper' $false $wrapperProperties
+}
 if (Test-Path -LiteralPath $versionJson) {
     $manifest = Get-Content -Raw -LiteralPath $versionJson | ConvertFrom-Json
     $loader = $manifest.libraries | Where-Object { $_.name -eq ("net.fabricmc:fabric-loader:" + $config.fabricLoaderVersion) }
