@@ -10,6 +10,7 @@ import argparse
 import ctypes
 import hashlib
 import json
+import time
 from ctypes import wintypes
 from pathlib import Path
 
@@ -30,7 +31,7 @@ USER32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.POINT)]
 USER32.ClientToScreen.restype = wintypes.BOOL
 
 
-def foreground_client() -> tuple[int, int, int, int]:
+def foreground_client() -> tuple[int, tuple[int, int, int, int]]:
     window = USER32.GetForegroundWindow()
     if not window:
         raise RuntimeError("No foreground window")
@@ -48,18 +49,31 @@ def foreground_client() -> tuple[int, int, int, int]:
     top_left = wintypes.POINT(0, 0)
     if not USER32.ClientToScreen(window, ctypes.byref(top_left)):
         raise ctypes.WinError(ctypes.get_last_error())
-    return (top_left.x, top_left.y, top_left.x + client.right, top_left.y + client.bottom)
+    return window, (top_left.x, top_left.y, top_left.x + client.right, top_left.y + client.bottom)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "artifacts" / "screenshots" / "g0.png")
+    parser.add_argument("--wait-seconds", type=float, default=10, help="Time to bring Minecraft to the foreground")
     args = parser.parse_args()
+    if not 0 <= args.wait_seconds <= 60:
+        parser.error("--wait-seconds must be between 0 and 60")
     output = args.output.resolve()
     if not output.is_relative_to(ROOT.resolve()):
         parser.error("output must be inside the project repository")
-    bounds = foreground_client()
+    deadline = time.monotonic() + args.wait_seconds
+    while True:
+        try:
+            window, bounds = foreground_client()
+            break
+        except RuntimeError as exc:
+            if time.monotonic() >= deadline:
+                raise SystemExit(str(exc)) from None
+            time.sleep(0.1)
     image = ImageGrab.grab(bbox=bounds, all_screens=True)
+    if USER32.GetForegroundWindow() != window:
+        raise SystemExit("Foreground window changed during capture; no image was saved")
     output.parent.mkdir(parents=True, exist_ok=True)
     image.save(output, format="PNG")
     print(json.dumps({
