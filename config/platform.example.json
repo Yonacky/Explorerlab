@@ -1,0 +1,17 @@
+{
+  "minecraftVersion": "1.20.1",
+  "fabricLoaderVersion": "0.19.5",
+  "fabricApiVersion": "0.92.12+1.20.1",
+  "javaMajorVersion": 17,
+  "javaHome": "C:\\path\\to\\jdk-17",
+  "hmclRoot": "D:\\path\\to\\HMCL",
+  "hmclInstance": "1.20.1-Fabric",
+  "accountMode": "offline",
+  "display": {
+    "width": 1280,
+    "height": 720,
+    "guiScale": 2,
+    "fovOption": 0.0,
+    "renderDistance": 4
+  }
+}

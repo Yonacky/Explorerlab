@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "explorerlab",
+  "version": "${version}",
+  "name": "ExplorerLab",
+  "description": "Controlled Minecraft research environment for Explorer Curiosity.",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["org.explorerlab.ExplorerLabMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "1.20.1",
+    "java": ">=17",
+    "fabric-api": ">=0.92.12"
+  }
+}

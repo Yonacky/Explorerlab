@@ -1,0 +1,11 @@
+.gradle/
+build/
+run/
+out/
+*.class
+*.log
+.idea/
+.vscode/
+__pycache__/
+artifacts/
+config/platform.json
