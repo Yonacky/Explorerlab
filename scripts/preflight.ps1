@@ -45,6 +45,13 @@ if (Test-Path -LiteralPath $hmclConfigPath) {
     Report 'HMCL game Java' (($javaSetting.javaVersionType -eq 'CUSTOM') -and ($javaSetting.javaDir -eq $expectedJava)) "$($javaSetting.javaVersionType): $($javaSetting.javaDir)"
 }
 Report 'Isolated Fabric API' (Test-Path -LiteralPath $isolatedApiJar) $isolatedApiJar
+$componentsPath = Join-Path $root 'config\minecraft-components.json'
+if (Test-Path -LiteralPath $componentsPath) {
+    $components = Get-Content -Raw -LiteralPath $componentsPath | ConvertFrom-Json
+    $carpetJar = Join-Path $instanceRoot ("mods\" + $components.carpet.filename)
+    $carpetHashMatches = (Test-Path -LiteralPath $carpetJar) -and ((Get-FileHash -Algorithm SHA256 -LiteralPath $carpetJar).Hash.ToLowerInvariant() -eq $components.carpet.sha256)
+    Report 'Carpet installed hash' $carpetHashMatches $carpetJar
+}
 $labJar = Join-Path $instanceRoot ("mods\explorerlab-" + $config.minecraftVersion + '-' + $config.fabricLoaderVersion + '-0.1.0.jar')
 Report 'ExplorerLab G0 jar' (Test-Path -LiteralPath $labJar) $labJar
 $logs = @(Get-ChildItem -LiteralPath (Join-Path $instanceRoot 'logs') -Filter '*.log' -ErrorAction SilentlyContinue)
@@ -53,4 +60,8 @@ if ($logs.Count -gt 0) {
     $latest = $logs | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     $loaded = Select-String -LiteralPath $latest.FullName -Pattern 'ExplorerLab G0 loaded' -Quiet
     Report 'ExplorerLab G0 runtime' $loaded $latest.FullName
+    if ($components) {
+        $carpetLoaded = Select-String -LiteralPath $latest.FullName -Pattern '\s- carpet 1\.4\.112' -Quiet
+        Report 'Carpet runtime' $carpetLoaded $latest.FullName
+    }
 }

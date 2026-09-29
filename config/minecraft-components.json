@@ -1,0 +1,10 @@
+{
+  "carpet": {
+    "version": "1.4.112+v230608",
+    "minecraftVersion": "1.20.1",
+    "filename": "fabric-carpet-1.20-1.4.112+v230608.jar",
+    "sha256": "00ad0ed15c457fdec0e6eefe84d79e1bb7b8f91f5f3a133cf89cb2b60ffb3d11",
+    "source": "https://github.com/gnembon/fabric-carpet/releases/tag/1.4.112",
+    "role": "G0 world tick freeze and step candidate; runtime behavior pending validation"
+  }
+}
